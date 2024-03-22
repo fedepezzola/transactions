@@ -45,7 +45,7 @@ func mainWithExitCode() int {
 	}(log)
 
 	// Perform the startup and shutdown sequence.
-	if err := processFile(log); err != nil {
+	if err := processFile(log, os.Stdin); err != nil {
 		log.Errorw("Fatal", "ERROR", err)
 		if err := log.Sync(); err != nil {
 			fmt.Println(err)
@@ -55,13 +55,7 @@ func mainWithExitCode() int {
 	return 0
 }
 
-func processFile(log *zap.SugaredLogger) error {
-	file, err := os.Open("txns.csv")
-	if err != nil {
-		log.Errorf("Can't open file: %x", err.Error())
-		return err
-	}
-	defer file.Close()
+func processFile(log *zap.SugaredLogger, file *os.File) error {
 
 	accountStats := AccountStats{
 		Balance:              0.0,

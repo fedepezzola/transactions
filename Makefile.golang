@@ -1,0 +1,42 @@
+# Variables for Go commands.
+
+# Allow users to define GOFLAGS, but override it with flags mandatory for
+# compilation.
+GOFLAGS ?=
+ifndef .GOFLAGS_GUARD
+.GOFLAGS_GUARD := 1
+endif
+export GOFLAGS
+ifdef DEBUG
+$(info GOFLAGS = $(GOFLAGS))
+endif
+
+# Allow users to set custom build tags.
+GOBUILDTAGS ?=
+
+# Allow users to set all known build tags by passing ALLTAGS.
+ifndef .ALLTAGS_GUARD
+.ALLTAGS_GUARD := 1
+ifdef ALLTAGS
+override GOBUILDTAGS := integration,$(GOBUILDTAGS)
+endif
+endif
+
+GO ?= go
+GOBUILD ?= $(GO) build
+GOGENERATE ?= $(GO) generate
+GOINSTALL ?= $(GO) install
+GOLIST ?= $(GO) list
+GOMOD ?= $(GO) mod
+GORUN ?= $(GO) run
+GOTEST ?= $(GO) test
+GOTOOL ?= $(GO) tool
+COBERTURA ?= gocover-cobertura
+
+ifndef .GOBUILDTAGS_GUARD
+.GOBUILDTAGS_GUARD := 1
+ifneq (,$(GOBUILDTAGS))
+GOBUILD := $(GOBUILD) -tags='$(GOBUILDTAGS)'
+GOTEST := $(GOTEST) -tags='$(GOBUILDTAGS)'
+endif
+endif
