@@ -87,18 +87,18 @@ generate:
 
 .PHONY: create-database
 create-database:
-	docker-compose exec db psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$(DB_NAME)';" | grep 1 -q || \
-	docker-compose exec db psql -U postgres -tc "CREATE DATABASE $(DB_NAME)"
+	docker-compose exec db psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$(TRANSACTIONS_DB_NAME)';" | grep 1 -q || \
+	docker-compose exec db psql -U postgres -tc "CREATE DATABASE $(TRANSACTIONS_DB_NAME)"
 
 .PHONY: drop-database
 drop-database:
-	docker-compose exec db psql -U postgres -tc "DROP DATABASE $(DB_NAME);"
+	docker-compose exec db psql -U postgres -tc "DROP DATABASE $(TRANSACTIONS_DB_NAME);"
 
 .PHONY: migrate
 migrate:
 	echo $(PWD)
 	$(MIGRATE) -source file://infrastructure/database/migrations \
-			-database "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):5432/$(DB_NAME)?sslmode=disable" up
+			-database "postgres://$(TRANSACTIONS_DB_USER):$(TRANSACTIONS_DB_PASSWORD)@$(DB_HOST):5432/$(TRANSACTIONS_DB_NAME)?sslmode=disable" up
 
 .PHONY: create-migration
 create-migration:
