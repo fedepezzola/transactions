@@ -84,8 +84,6 @@ func (s *TransactionService) ProcessTransactionsStream(ctx context.Context, acco
 	}
 
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-
 		txn, err := parseTransaction(scanner.Text(), &transaction)
 		if err != nil {
 			return nil, fmt.Errorf("error reading from file: %w", err)
