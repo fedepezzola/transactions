@@ -68,14 +68,6 @@ clean:
 .PHONY: check
 check: test
 
-.PHONY: deps
-deps:
-	$(GO) install \
-	    github.com/t-yuki/gocover-cobertura \
-	    golang.org/x/tools/cmd/goimports \
-	    github.com/topfreegames/helm-generate/cmd/helm-generate \
-
-
 .PHONY: run
 run:
 	$(GO) run $(BUILD_INFO_LDFLAGS) transactions.go
@@ -163,12 +155,3 @@ lint:
 .PHONY: lint-fix
 lint-fix:
 	golangci-lint run --fix
-
-.PHONY: manifests
-manifests:
-	helm-generate ./k8s
-
-.PHONY: ci-fmt
-ci-fmt:
-	@test -z "$$($(GOFMT) -d $(NON_GENERATED_SOURCES))" || (printf "Formatting check failed!\n\nPlease fix it with 'make fix'\n" && false)
-

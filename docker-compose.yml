@@ -4,10 +4,12 @@ services:
   db:
     container_name: transactions-db
     image: postgres:14-alpine
+    env_file:
+      - ./.env
     environment:
-      - POSTGRES_DB=transactions
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=${TRANSACTIONS_DB_NAME}
+      - POSTGRES_USER=${TRANSACTIONS_DB_USER}
+      - POSTGRES_PASSWORD=${TRANSACTIONS_DB_PASSWORD}
     ports:
       - '5432:5432'
     healthcheck:
@@ -19,16 +21,23 @@ services:
     networks:
       - transactions
 
-  live_app:
+  app:
     container_name: transactions-app
-    image: cosmtrek/air
-    working_dir: /go/src/transactions
+    image: transactions:latest
+    working_dir: /usr/local/bin
+    env_file:
+      - ./.env
     environment:
-      - DB_HOST=transactions-db
+      - TRANSACTIONS_DB_HOST=transactions-db
     depends_on:
       - db
+    volumes:
+      - source: ./
+        target: /usr/local/files
+        type: bind
     networks:
       - transactions
+    command: transactions -f /usr/local/files/txns.csv
 
 networks:
   transactions:
