@@ -21,10 +21,15 @@ type (
 		Insert(ctx context.Context, m *domain.Transaction) (*domain.Transaction, error)
 	}
 
+	NotificationsRepository interface {
+		Notify(data interface{}) error
+	}
+
 	TransactionService struct {
-		log                   *zap.SugaredLogger
-		AccountRepository     AccountRepository
-		TransactionRepository TransactionRepository
+		log                     *zap.SugaredLogger
+		AccountRepository       AccountRepository
+		TransactionRepository   TransactionRepository
+		NotificationsRepository NotificationsRepository
 	}
 
 	AccountStats struct {
@@ -39,11 +44,16 @@ type (
 	}
 )
 
-func NewTransactionService(log *zap.SugaredLogger, accountRepository AccountRepository, transactionRepository TransactionRepository) *TransactionService {
+func NewTransactionService(log *zap.SugaredLogger,
+	accountRepository AccountRepository,
+	transactionRepository TransactionRepository,
+	notificationsRepository NotificationsRepository,
+) *TransactionService {
 	return &TransactionService{
-		log:                   log,
-		AccountRepository:     accountRepository,
-		TransactionRepository: transactionRepository,
+		log:                     log,
+		AccountRepository:       accountRepository,
+		TransactionRepository:   transactionRepository,
+		NotificationsRepository: notificationsRepository,
 	}
 }
 
@@ -110,6 +120,11 @@ func (s *TransactionService) ProcessTransactionsStream(ctx context.Context, acco
 	_, err = s.AccountRepository.Update(ctx, account)
 	if err != nil {
 		return nil, fmt.Errorf("error updating account: %w", err)
+	}
+
+	err = s.NotificationsRepository.Notify(accountStats)
+	if err != nil {
+		return nil, fmt.Errorf("error notifying: %w", err)
 	}
 
 	return &accountStats, nil

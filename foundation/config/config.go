@@ -14,10 +14,23 @@ type DBConfig struct {
 	DisableTLS   bool   `conf:"default:true"`
 }
 
+type EmailConfig struct {
+	User     string `conf:"default:mail@gmail.com"`
+	Password string `conf:"default:password,mask"`
+	SmtpHost string `conf:"smtp.gmail.com"`
+	SmtpPort string `conf:"587"`
+	To       string `conf:"default:mail.recipient@gmail.com"`
+}
+type NotificationsConfig struct {
+	Email EmailConfig
+}
+
 type AppConfig struct {
 	conf.Version
 	DB            DBConfig
+	Notifications NotificationsConfig
 	AccountNumber string `conf:"default:123456"`
+	File          string `conf:"short:f"`
 }
 
 func Parse(prefix string) (AppConfig, string, error) {

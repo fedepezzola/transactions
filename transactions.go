@@ -9,6 +9,7 @@ import (
 
 	"github.com/fedepezzola/transactions/adapters/repositories"
 	"github.com/fedepezzola/transactions/business/service"
+	"github.com/fedepezzola/transactions/infrastructure/notifications/email"
 
 	"github.com/fedepezzola/transactions/foundation/config"
 	"github.com/fedepezzola/transactions/foundation/database"
@@ -61,8 +62,19 @@ func mainWithExitCode() int {
 		db.Close()
 	}()
 
+	file := os.Stdin
+
+	if cfg.File != "" {
+		file, err = os.Open(cfg.File)
+		if err != nil {
+			log.Errorf("Can't open file: %x", err.Error())
+			return 1
+		}
+		defer file.Close()
+	}
+
 	// Perform the startup and shutdown sequence.
-	if err := processFile(cfg.AccountNumber, log, db, os.Stdin); err != nil {
+	if err := processFile(cfg.AccountNumber, cfg, log, db, file); err != nil {
 		log.Errorw("Fatal", "ERROR", err)
 		if err := log.Sync(); err != nil {
 			fmt.Println(err)
@@ -72,14 +84,17 @@ func mainWithExitCode() int {
 	return 0
 }
 
-func processFile(accountNumber string, log *zap.SugaredLogger, db *sqlx.DB, file *os.File) error {
+func processFile(accountNumber string, cfg config.AppConfig, log *zap.SugaredLogger, db *sqlx.DB, file *os.File) error {
 
 	ctx := context.TODO()
 
 	postgresAccount := repositories.NewPostgresAccountRepository(log, db)
 	postgresTransaction := repositories.NewPostgresTransactionRepository(log, db)
 
-	transactionService := service.NewTransactionService(log, postgresAccount, postgresTransaction)
+	emailNotification := email.NewEmailNotificationListener(cfg.Notifications.Email, log)
+	notificationsRepository := repositories.NewNotificationsRepository(log, []repositories.NotificationsListener{emailNotification})
+
+	transactionService := service.NewTransactionService(log, postgresAccount, postgresTransaction, notificationsRepository)
 
 	scanner := bufio.NewScanner(file)
 
