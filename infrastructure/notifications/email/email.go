@@ -24,7 +24,7 @@ func NewEmailNotificationListener(cfg config.EmailConfig, log *zap.SugaredLogger
 }
 
 func (e *EmailNotificationListener) Update(data any) error {
-	return e.SendTemplatedEmail("/home/fedepezzola/transactions/infrastructure/notifications/email/transactions_email.html", "New transactions file processed.", data)
+	return e.SendTemplatedEmail("./infrastructure/notifications/email/transactions_email.html", "New transactions file processed.", data)
 }
 
 func (e *EmailNotificationListener) SendTemplatedEmail(templateName string, subject string, data any) error {
